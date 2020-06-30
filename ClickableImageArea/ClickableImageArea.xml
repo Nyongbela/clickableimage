@@ -6,27 +6,20 @@
     <icon />
 
      <properties>
-        
         <property key="static" type="boolean" defaultValue="false">
                 <caption>static</caption>
                 <category>Context Object</category>
                 <description>The coordinates could be entered manually or from datasource</description>
         </property>
-
         <property key="RegionNameAttribute" type="string" defaultValue="">
                 <caption>Name of Region Attribute</caption>
                 <category>Context Object</category>
-                <description> Provide name of context object attribute whose value has to be replaced by the name of the clicked region </description>
+                <description> Provide name of context object attribute whose value has to be replaced by the name of the clicked region e.g. 'NameOfAttribute' </description>
 	</property>
-                <property key="RegionColorAttribute" type="string" defaultValue="">
+        <property key="RegionColorAttribute" type="string" defaultValue="">
                 <caption>Name of Region color</caption>
                 <category>Context Object</category>
-                <description> Provide name of context object attribute whose value has to be replaced by the color of the clicked region </description>
-	</property>
-                <property key="RegionCoordinatesAttribute" type="string" defaultValue="">
-                <caption>Name of region coordinate</caption>
-                <category>Context Object</category>
-                <description> Provide name of context object attribute whose value has to be replaced by the name of the clicked region </description>
+                <description> Provide name of context object attribute whose value has to be replaced by the color of the clicked region e.g. 'NameOfAttribute' </description>
 	</property>
 
         <property key="inputParameterEntity" type="entity" required="false">
@@ -34,20 +27,17 @@
                     <category>Dynamic location</category>
                     <description>Entity of the parameter passed to the microflow or nanoflow</description>
         </property>
-
         <property key="locationsEntity" type="entity" required="false">
                     <caption>Locations entity</caption>
                     <category>Dynamic location</category>
-                    <description>Entity of the list returned in datasource microfow or nanoflow </description>
+                    <description>Entity of the list returned in data source microfow or nanoflow. This entity must have at least three String attributes named as follows: "_RegionName", "_RegionCoordinate", "_RegionColor" </description>
         </property>
-
         <property key="dataSourceMicroflow" type="microflow" entityProperty="inputParameterEntity" required="false">
                     <caption>Microflow</caption>
                     <category>Dynamic location</category>
                     <description>The datasource 'Microflow' that returns the list of locations</description>
                     <returnType type="Object" entityProperty="locationsEntity" isList="true"/>
         </property>
-
         <property key="dataSourceNanoflow" type="nanoflow" entityProperty="inputParameterEntity" required="false">
                     <caption>Nanoflow</caption>
                     <category>Dynamic location</category>
@@ -55,85 +45,60 @@
                     <returnType type="Object" isList="true" entityProperty="locationsEntity"/>
         </property>
 
-        <property key="ImageRegions" type="object" isList="true">
+        <property key="ImageRegions" type="object" isList="true" required="false" >
                 <caption>Regions</caption>
                 <category>Static location</category>
                 <description>create image regions</description>
                 <properties>
-                        <property key="RegionName" type="string" required='true'>
+                        <property key="RegionName" type="string" required='false'>
                         <caption>Region Name</caption>
                         <category>Image Region</category>
                         <description></description>
                         </property>
-                        <property key="regionCoordinate" type="string" required="true" defaultValue="">
+                        <property key="regionCoordinate" type="string" required="false" defaultValue="">
                         <caption>Coordinates</caption>
                         <category>Image Region</category>
                         <description></description>
                         </property> 
-                        <property key="regionColor" type="string" required="false" defaultValue="">
-                        <caption>Color</caption>
-                        <category>Image Region</category>
-                        <description></description>
-                        </property>
-                        <property key="initialColor" type="boolean" defaultValue="false">
-                        <caption>Initially selected</caption>
-                        <category>Image Region</category>
-                        <description></description>
-                        </property>                
                 </properties>   
-
 	</property>
 
-        
         <property key="mapImage" type="image">
-        <caption>Image to show</caption>
-        <category>Map Image</category>
-        <description>mapped image</description>
+                <caption>image to show</caption>
+                <category>Map Image</category>
+                <description>Image of the map. This should be the image that was used to generate the polygon points</description>
         </property>
 
         <property key="imgWidth" type="integer" defaultValue="50">
-        <caption>image width</caption>
-        <category>Map Image</category>
-        <description>The width should be same as the height of the mapped image</description>
+                <caption>image width</caption>
+                <category>Map Image</category>
+                <description>The width should be same as the height of the map image</description>
 	</property>
 
         <property key="imgHeight" type="integer" defaultValue="50">
-        <caption>image height</caption>
-        <category>Map Image</category>
-        <description>The height should be same as the height of the mapped image</description>
+                <caption>image height</caption>
+                <category>Map Image</category>
+                <description>The height should be same as the height of the map image</description>
 	</property>
 
-        <property key="fillColor" type="string" defaultValue="rgba(255, 255, 255, 0)">
-        <caption>Initial region color</caption>
-        <category>Style</category>
-        <description>Initial color of map region. It should be in RGB e.g. rgba(255, 255, 255, 0)</description>
+        <property key="unSelectedColor" type="string" defaultValue="rgb(255, 255, 255, 0)" required='true'>
+                <caption>Unselected region color</caption>
+                <category>Map Image</category>
+                <description>Color of a map polygon when unselected. It should be in RGB e.g. rgb(255, 255, 255, 0)</description>
+	</property>
+        <property key="selectedColor" type="string" defaultValue="rgb(50,205,50)" required='true'>
+                <caption>Selected region color</caption>
+                <category>Map Image</category>
+                <description>Color of a map polygon when unselected. It should be in RGB e.g. rgb(255, 255, 255, 0)</description>
 	</property>
 
-        <property key="selectColor" type="string" defaultValue="rgb(255, 0, 0)">
-        <caption>Selected region color</caption>
-        <category>Style</category>
-        <description>Color of selected region. It should be in RGB e.g. rgb(255, 0, 0)</description>
-	</property>
-
-        <property key="borderColor" type="string" defaultValue="rgb(255, 0, 0)">
-        <caption>Region border color</caption>
-        <category>Style</category>
-        <description>Color of region border. It should be in RGB e.g. rgb(255, 0, 0)</description>
-	</property>
-
-        <property key="borderthickness" type="integer" defaultValue="1">
-        <caption>Region border width</caption>
-        <category>Style</category>
-        <description>Width of region border. It should be an integer</description>
-	</property>
-
-        <property key="mfToExecute" type="microflow" required = "true">
-        <caption>Event Microflow</caption>
-        <category>Event</category>
-        <description>Microflow called when clicking</description>
+        <property key="mfToExecute" type="microflow" required = "false">
+                <caption>Event Microflow</caption>
+                <category>Event</category>
+                <description>Microflow called when clicking</description>
 		<returnType type="Void"></returnType>
 	</property>
-        
+
      </properties>
        
 </widget>  
