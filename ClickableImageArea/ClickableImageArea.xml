@@ -6,12 +6,18 @@
     <icon />
 
      <properties>
-        <property key="static" type="boolean" defaultValue="false">
-                <caption>static</caption>
-                <category>Context Object</category>
-                <description>The coordinates could be entered manually or from datasource</description>
+
+        <property key="inputParameterEntity" type="entity" required="false">
+                    <caption>Input parameter entity</caption>
+                    <category>Context Object</category>
+                    <description>Entity of the parameter passed to the microflow or nanoflow</description>
         </property>
-        <property key="RegionNameAttribute" type="string" defaultValue="">
+        <property key="locationsEntity" type="entity" required="false">
+                    <caption>Locations entity</caption>
+                    <category>Context Object</category>
+                    <description>Entity of the list returned in data source microfow or nanoflow. This entity must have at least three String attributes named as follows: "_RegionName", "_RegionCoordinate", "_RegionColor" </description>
+        </property>
+                <property key="RegionNameAttribute" type="string" defaultValue="">
                 <caption>Name of Region Attribute</caption>
                 <category>Context Object</category>
                 <description> Provide name of context object attribute whose value has to be replaced by the name of the clicked region e.g. 'NameOfAttribute' </description>
@@ -21,47 +27,18 @@
                 <category>Context Object</category>
                 <description> Provide name of context object attribute whose value has to be replaced by the color of the clicked region e.g. 'NameOfAttribute' </description>
 	</property>
-
-        <property key="inputParameterEntity" type="entity" required="false">
-                    <caption>Input parameter entity</caption>
-                    <category>Dynamic location</category>
-                    <description>Entity of the parameter passed to the microflow or nanoflow</description>
-        </property>
-        <property key="locationsEntity" type="entity" required="false">
-                    <caption>Locations entity</caption>
-                    <category>Dynamic location</category>
-                    <description>Entity of the list returned in data source microfow or nanoflow. This entity must have at least three String attributes named as follows: "_RegionName", "_RegionCoordinate", "_RegionColor" </description>
-        </property>
         <property key="dataSourceMicroflow" type="microflow" entityProperty="inputParameterEntity" required="false">
                     <caption>Microflow</caption>
-                    <category>Dynamic location</category>
+                    <category>Context Object</category>
                     <description>The datasource 'Microflow' that returns the list of locations</description>
                     <returnType type="Object" entityProperty="locationsEntity" isList="true"/>
         </property>
         <property key="dataSourceNanoflow" type="nanoflow" entityProperty="inputParameterEntity" required="false">
                     <caption>Nanoflow</caption>
-                    <category>Dynamic location</category>
+                    <category>Context Object</category>
                     <description>The datasource 'Nanoflow' that returns the list of locations</description>
                     <returnType type="Object" isList="true" entityProperty="locationsEntity"/>
         </property>
-
-        <property key="ImageRegions" type="object" isList="true" required="false" >
-                <caption>Regions</caption>
-                <category>Static location</category>
-                <description>create image regions</description>
-                <properties>
-                        <property key="RegionName" type="string" required='false'>
-                        <caption>Region Name</caption>
-                        <category>Image Region</category>
-                        <description></description>
-                        </property>
-                        <property key="regionCoordinate" type="string" required="false" defaultValue="">
-                        <caption>Coordinates</caption>
-                        <category>Image Region</category>
-                        <description></description>
-                        </property> 
-                </properties>   
-	</property>
 
         <property key="mapImage" type="image">
                 <caption>image to show</caption>
@@ -80,18 +57,6 @@
                 <category>Map Image</category>
                 <description>The height should be same as the height of the map image</description>
 	</property>
-
-        <property key="unSelectedColor" type="string" defaultValue="rgb(255, 255, 255, 0)" required='true'>
-                <caption>Unselected region color</caption>
-                <category>Map Image</category>
-                <description>Color of a map polygon when unselected. It should be in RGB e.g. rgb(255, 255, 255, 0)</description>
-	</property>
-        <property key="selectedColor" type="string" defaultValue="rgb(50,205,50)" required='true'>
-                <caption>Selected region color</caption>
-                <category>Map Image</category>
-                <description>Color of a map polygon when unselected. It should be in RGB e.g. rgb(255, 255, 255, 0)</description>
-	</property>
-
         <property key="mfToExecute" type="microflow" required = "false">
                 <caption>Event Microflow</caption>
                 <category>Event</category>

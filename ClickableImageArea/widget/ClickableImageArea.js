@@ -60,16 +60,11 @@ define([
         ImageRegions : '',
         imgWidth : 50,
         imgHeight : 50,
-        unSelectedColor: '',
-        selectedColor: '',
 
         /** Context Object category */
-        static:false,
         RegionNameAttribute:'',
         RegionCoordinatesAttribute:'',
         RegionColorAttribute:'',
-
-        /** Dynamic location category */
         inputParameterEntity: null,
         locationsEntity:null,
         dataSourceMicroflow: null,
@@ -113,42 +108,15 @@ define([
             this.domNode.style.outline = "1px";            
             this.handleDivNode();
             this.getLocationsFromList();
-
-            if(this.static == true){
-                this.addPolygonNodeStatic(this.ImageRegions);
-            }
         },  
 
         handleDivNode: function(){
             logger.debug(this.id + ".handleDivNode");
-            this.divNode.style = `border: 1px solid black;
-                                  background:url(${this.mapImage}); 
+            this.divNode.style = `background:url(${this.mapImage}); 
                                   width: ${this.imgWidth}px;
                                   height: ${this.imgHeight}px;
                                   background-repeat: no-repeat`;
         },       
-        
-        addPolygonNodeStatic: function(regions){
-            console.log(regions);
-            var svg = document.getElementById('svgID')
-            var svgWidth = svg.setAttribute('width', this.imgWidth);
-            var svgHeight = svg.setAttribute('height', this.imgHeight);
-            console.log("SVG height: " + svgHeight + ' ' + "SVG width: " + svgWidth )
-            var polygonNodeToClone = document.getElementById('PolyID');
-            var i=0;
-            for(i = 0; i<regions.length; i++){
-                var polygonNode = polygonNodeToClone.cloneNode(true);
-                polygonNode.id = regions[i].RegionName;
-                polygonNode.setAttribute('points', regions[i].regionCoordinate);
-                polygonNode.setAttribute('data-dojo-attach-point', regions[i].RegionName);
-                polygonNode.style.fill = this.unSelectedColor;
-
-
-                svg.appendChild(polygonNode);
-            }
-
-            svg.removeChild(polygonNodeToClone);
-        },
 
         addPolygonNodeDynamic: function(regions){
             console.log(regions);
@@ -157,25 +125,43 @@ define([
             var svgHeight = svg.setAttribute('height', this.imgHeight);
             console.log("SVG height: " + svgHeight + ' ' + "SVG width: " + svgWidth )
             var polygonNodeToClone = document.getElementById('PolyID');
+            this.createPolygon(regions, polygonNodeToClone, svg)
+        },
+
+        // // Async function to add polygon
+        // asyncAddPolygon: async function(regions){
+        //     console.log(regions);
+        //     var svg = document.getElementById('svgID')
+        //     var svgWidth = svg.setAttribute('width', this.imgWidth);
+        //     var svgHeight = svg.setAttribute('height', this.imgHeight);
+        //     console.log("SVG height: " + svgHeight + ' ' + "SVG width: " + svgWidth )
+        //     var polygonNodeToClone = document.getElementById('PolyID');
+        //     // await this.createPolygon(regions, polygonNodeToClone, svg)
+
+        // },
+
+        createPolygon: function(regions, polygonNodeToClone, svg){
             var i=0;
             for(i = 0; i<regions.length; i++){
                 var polygonNode = polygonNodeToClone.cloneNode(true);
                 polygonNode.id = regions[i]._RegionName.value;
                 //polygonNode.name =  regions[i]._RegionName.value;
                 polygonNode.setAttribute('points', regions[i]._RegionCoordinate.value );
-                polygonNode.setAttribute('data-dojo-attach-point', regions[i]._RegionName.value);  
+                polygonNode.setAttribute('data-dojo-attach-point', regions[i]._RegionName.value);
+
+                polygonNode.style.fill = regions[i]._RegionColor.value;
+
                 if(regions[i]._RegionColor.value == '' || regions[i]._RegionColor.value == null){
-                    polygonNode.style.fill = this.unSelectedColor;
+                    polygonNode.style.fill = 'rgba(255, 255, 255, 0)';
                 }
                 else{
                     polygonNode.style.fill = regions[i]._RegionColor.value;
                 }
 
-
                 svg.appendChild(polygonNode);
             }
 
-            svg.removeChild(polygonNodeToClone);
+            polygonNodeToClone.style.display = "none";
         },
 
         getLocationsFromList: function(){
@@ -198,61 +184,47 @@ define([
                 var attributes = item.jsonData.attributes;
                 this._locations.push(attributes);
             }, this)
-            
-            if(this.static == false){
-                console.log('Locations: ', this._locations);
-                this.addPolygonNodeDynamic(this._locations);
-            }
+
+            console.log('Locations: ', this._locations);
+            this.addPolygonNodeDynamic(this._locations);
             
             this.clickPolygon();
         },
+
 
         clickPolygon: function(){
             var same = this;
             document.addEventListener('click', function(e){
                 if(e.target.tagName == 'polygon'){
-                    console.log('fill color: ', e.target.style.fill)
-                    console.log('unselected color: ', same.unSelectedColor)
-
-                    var targetFillRGB = same.convertRGBToHEX(e.target.style.fill)
-
-                    console.log('targetFill RGB: ', targetFillRGB)
-                    var unSelectedColorRGB = same.convertRGBToHEX(same.unSelectedColor)
-                    console.log('unSelectedColor RGB: ', unSelectedColorRGB)
-                    if (targetFillRGB == unSelectedColorRGB){
-                        e.target.style.fill = same.selectedColor;
-                        console.log('New fill color: ', e.target.style.fill)
-                    }else{
-                        e.target.style.fill = same.unSelectedColor;
-                    }
-
                     same._contextObj.set(same.RegionNameAttribute, e.target.id);
-                    //same._contextObj.set(same.RegionCoordinatesAttribute, e.target.points);
+                    same._contextObj.set(same.RegionCoordinatesAttribute, e.target.points);
                     same._contextObj.set(same.RegionColorAttribute, e.target.style.fill);
                     same._execMf(same.mfToExecute, same._contextObj.getGuid());
+                    
                 }     
             })
         },
 
-        convertRGBToHEX: function(rgb){
-            rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
-                return (rgb && rgb.length === 4) ? "#" +
-                ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
-                ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
-                ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
-        },
+        // convertRGBToHEX: function(rgb){
+        //     rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+        //         return (rgb && rgb.length === 4) ? "#" +
+        //         ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+        //         ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+        //         ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
+        // },
 
-        clickArea: function(){
-            this.connect(this.divNode, "click", lang.hitch(this, function (e) {
+        // clickArea: function(){
+        //     this.connect(this.divNode, "click", lang.hitch(this, function (e) {
 
-                if (dojoDom.isDescendant(e.target, this.svgNode)){
-                    console.log('name of current element: ' + e.target.title);   
-                    this._execMf(this.mfToExecute, this._contextObj.getGuid());   
-                }
+        //         if (dojoDom.isDescendant(e.target, this.svgNode)){
+        //             console.log('name of current element: ' + e.target.title);   
+        //             this._execMf(this.mfToExecute, this._contextObj.getGuid()); 
+
+        //         }
               
                 
-            }));
-        },
+        //     }));
+        // },
 
         // mxui.widget._WidgetBase.update is called when context is changed or initialized. Implement to re-render and / or fetch data.
         update: function (obj, callback) {
@@ -298,7 +270,7 @@ define([
 
             /* Modified starts */
             this.setupMapWidget();
-            this.clickPolygon()
+            //this.clickPolygon()
             
             //this.clickArea();
             
@@ -331,7 +303,7 @@ define([
 
             // Important to clear all validations!
             this._clearValidations();
-            //this.getLocationsFromList();
+            
             this.setupMapWidget();
 
             // The callback, coming from update, needs to be executed, to let the page know it finished rendering
