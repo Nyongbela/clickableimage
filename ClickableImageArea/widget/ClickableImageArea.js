@@ -121,47 +121,41 @@ define([
         addPolygonNodeDynamic: function(regions){
             console.log(regions);
             var svg = document.getElementById('svgID')
+            var childNodes = svg.children;
+            console.log('Child nodes', childNodes[0].id)
+
+            console.log('SVG', svg.childElementCount)
+
             var svgWidth = svg.setAttribute('width', this.imgWidth);
             var svgHeight = svg.setAttribute('height', this.imgHeight);
             console.log("SVG height: " + svgHeight + ' ' + "SVG width: " + svgWidth )
             var polygonNodeToClone = document.getElementById('PolyID');
-            this.createPolygon(regions, polygonNodeToClone, svg)
-        },
 
-        // // Async function to add polygon
-        // asyncAddPolygon: async function(regions){
-        //     console.log(regions);
-        //     var svg = document.getElementById('svgID')
-        //     var svgWidth = svg.setAttribute('width', this.imgWidth);
-        //     var svgHeight = svg.setAttribute('height', this.imgHeight);
-        //     console.log("SVG height: " + svgHeight + ' ' + "SVG width: " + svgWidth )
-        //     var polygonNodeToClone = document.getElementById('PolyID');
-        //     // await this.createPolygon(regions, polygonNodeToClone, svg)
-
-        // },
-
-        createPolygon: function(regions, polygonNodeToClone, svg){
             var i=0;
             for(i = 0; i<regions.length; i++){
-                var polygonNode = polygonNodeToClone.cloneNode(true);
-                polygonNode.id = regions[i]._RegionName.value;
-                //polygonNode.name =  regions[i]._RegionName.value;
-                polygonNode.setAttribute('points', regions[i]._RegionCoordinate.value );
-                polygonNode.setAttribute('data-dojo-attach-point', regions[i]._RegionName.value);
-
-                polygonNode.style.fill = regions[i]._RegionColor.value;
-
-                if(regions[i]._RegionColor.value == '' || regions[i]._RegionColor.value == null){
-                    polygonNode.style.fill = 'rgba(255, 255, 255, 0)';
+                var Id = regions[i]._RegionName.value;
+                if(document.getElementById(Id) != null){
+                    this.updatePolygon(regions[i], document.getElementById(Id))
                 }
-                else{
-                    polygonNode.style.fill = regions[i]._RegionColor.value;
+                else {
+                    this.createPolygon(regions[i], polygonNodeToClone, svg)
                 }
-
-                svg.appendChild(polygonNode);
             }
 
             polygonNodeToClone.style.display = "none";
+        },
+
+        updatePolygon: function(region, node){
+            node.style.fill = region._RegionColor.value
+        },
+
+        createPolygon: function(region, polygonNodeToClone, svg){
+            var polygonNode = polygonNodeToClone.cloneNode(true);
+            polygonNode.id = region._RegionName.value;
+            polygonNode.setAttribute('points', region._RegionCoordinate.value );
+            polygonNode.setAttribute('data-dojo-attach-point', region._RegionName.value);
+            polygonNode.style.fill = region._RegionColor.value;
+            svg.appendChild(polygonNode);
         },
 
         getLocationsFromList: function(){
@@ -180,6 +174,7 @@ define([
         },
 
         processLocationData: function(itemList){
+            this._locations = [];
             itemList.forEach(function(item){
                 var attributes = item.jsonData.attributes;
                 this._locations.push(attributes);
@@ -187,8 +182,6 @@ define([
 
             console.log('Locations: ', this._locations);
             this.addPolygonNodeDynamic(this._locations);
-            
-            this.clickPolygon();
         },
 
 
@@ -199,32 +192,13 @@ define([
                     same._contextObj.set(same.RegionNameAttribute, e.target.id);
                     same._contextObj.set(same.RegionCoordinatesAttribute, e.target.points);
                     same._contextObj.set(same.RegionColorAttribute, e.target.style.fill);
-                    same._execMf(same.mfToExecute, same._contextObj.getGuid());
+                    var selectedPolygon = e.target.id;
+                    console.log('selected ploygon name', selectedPolygon)
+                    same._execMf(same.mfToExecute, same._contextObj.getGuid(), selectedPolygon);
                     
                 }     
             })
         },
-
-        // convertRGBToHEX: function(rgb){
-        //     rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
-        //         return (rgb && rgb.length === 4) ? "#" +
-        //         ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
-        //         ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
-        //         ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
-        // },
-
-        // clickArea: function(){
-        //     this.connect(this.divNode, "click", lang.hitch(this, function (e) {
-
-        //         if (dojoDom.isDescendant(e.target, this.svgNode)){
-        //             console.log('name of current element: ' + e.target.title);   
-        //             this._execMf(this.mfToExecute, this._contextObj.getGuid()); 
-
-        //         }
-              
-                
-        //     }));
-        // },
 
         // mxui.widget._WidgetBase.update is called when context is changed or initialized. Implement to re-render and / or fetch data.
         update: function (obj, callback) {
@@ -233,6 +207,7 @@ define([
             this._contextObj = obj;
             this._resetSubscriptions();
             this._updateRendering(callback); // We're passing the callback to updateRendering to be called after DOM-manipulation
+            this.setupMapWidget();
         },
 
         // mxui.widget._WidgetBase.enable is called when the widget should enable editing. Implement to enable editing if widget is input widget.
@@ -267,29 +242,21 @@ define([
         // Attach events to HTML dom elements
         _setupEvents: function () {
             logger.debug(this.id + "._setupEvents");
-
-            /* Modified starts */
-            this.setupMapWidget();
-            //this.clickPolygon()
-            
-            //this.clickArea();
+            this.clickPolygon();
             
         },
 
-        _execMf: function (mf, guid, cb) {
+        _execMf: function (mf, guid, cb, itemName) {
             logger.debug(this.id + "._execMf");
-
+            console.log('Item name', itemName)
+            var same = this;
             if (mf) {
                 mx.ui.action(mf, {
                     params: {
                         applyto: "selection",
                         guids: [guid]
                     },
-                    callback: lang.hitch(this, function (objs) {
-                        if (cb && typeof cb === "function") {
-                            cb(objs);
-                        }
-                    }),
+                    callback: lang.hitch(this, this.getLocationsFromList),
                     error: function (error) {
                         console.debug(error.description);
                     }
@@ -303,8 +270,6 @@ define([
 
             // Important to clear all validations!
             this._clearValidations();
-            
-            this.setupMapWidget();
 
             // The callback, coming from update, needs to be executed, to let the page know it finished rendering
             this._executeCallback(callback, "_updateRendering");
